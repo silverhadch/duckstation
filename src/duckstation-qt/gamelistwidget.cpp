@@ -203,6 +203,11 @@ void GameListModel::setIconSize(int size)
   Host::CommitBaseSettingChanges();
 
   emit iconSizeChanged(m_icon_size);
+
+  // Might look odd, but this is needed to force the section sizes to invalidate
+  // after we change them in the list view in the iconSizeChanged() handler.
+  emit headerDataChanged(Qt::Vertical, 0, rowCount() - 1);
+
   loadSizeDependentPixmaps();
   refreshIcons();
 }
@@ -347,7 +352,7 @@ void GameListModel::loadOrGenerateCover(QImage& image, const QImage& placeholder
 void GameListModel::coverLoaded(const std::string& path, const QImage& image, float scale)
 {
   // old request before cover scale change?
-  if (m_cover_scale != scale)
+  if (m_cover_scale != scale || !m_cover_pixmap_cache.Lookup(path))
     return;
 
   if (!image.isNull())
